@@ -11,3 +11,7 @@ Invoke Jenkins jobs from slack
 
 # Demo & Screenshot
 ![Jenkins Slackbot demo GIF](https://s3.ap-south-1.amazonaws.com/jenkinsbot/ezgif.com-optimize.gif)
+
+# Maintainers
+- Vivek Grover:
+- Denny Zhang: [![LinkedIn](https://www.dennyzhang.com/wp-content/uploads/sns/linkedin.png)](https://www.linkedin.com/in/dennyzhang001) [![Github](https://www.dennyzhang.com/wp-content/uploads/sns/github.png)](https://github.com/DennyZhang) [![Twitter](https://www.dennyzhang.com/wp-content/uploads/sns/twitter.png)](https://twitter.com/dennyzhang001) [![Slack](https://www.dennyzhang.com/wp-content/uploads/sns/slack.png)](https://www.dennyzhang.com/slack)
