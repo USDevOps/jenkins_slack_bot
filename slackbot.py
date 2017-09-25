@@ -9,7 +9,7 @@
 ## Description :
 ## --
 ## Created : <2017-08-27>
-## Updated: Time-stamp: <2017-09-25 09:13:41>
+## Updated: Time-stamp: <2017-09-25 09:18:28>
 ##-------------------------------------------------------------------
 import os
 import time
@@ -19,7 +19,6 @@ import slack_cmd_process
 import threading
 import python_mysql
 import slack_message
-
 
 # retrun username of the user
 def get_user_name(username,slack_client):
@@ -61,22 +60,27 @@ def handle_command(command, channel,msg_id,user_id):
      response,status,color,job_id=slack_cmd_process.cmd_process(command,username)
      if status != "notapproved":
        if msg_id == "Thread_False":
-         slack_client.api_call("chat.postMessage", channel=channel,
-                 text="<@%s> " %user_id ,as_user=True,attachments=[{"text": "%s" %response,"color":"%s" %color}])
+         slack_client.api_call("chat.postMessage", channel = channel,
+                               text="<@%s> " %user_id ,as_user = True, \
+                               attachments=[{"text": "%s" %response,"color":"%s" %color}])
        else:
          slack_client.api_call("chat.postMessage", channel=channel,
-                 text="<@%s> " %user_id, as_user=True,thread_ts=msg_id,attachments=[{"text": "%s" %response,"color":"%s" %color}])
+                               text="<@%s> " %user_id, as_user = True,\
+                               thread_ts=msg_id, attachments = [{"text": "%s" %response,"color":"%s" %color}])
 
      else:
         slack_client.api_call("chat.postMessage", channel=channel,
-                 text="<@%s> " %user_id ,as_user=True,attachments=[{"text": "%s" %response,"color":"%s" %color, "attachment_type": "default","callback_id": "{0}_{1}".format(username,job_id),"actions": [{"name": "option","text": "Send it in!","type": "button","value": "Yes" },{
-                    "name": "no",
-                    "text": "Not now, may be later!",
-                    "type": "button",
-                    "value": "bad"
-                }]}])
-
-
+                              text="<@%s> " %user_id ,as_user=True, \
+                              attachments=[{"text": "%s" %response,"color":"%s" %color, \
+                                            "attachment_type": "default",\
+                                            "callback_id": "{0}_{1}".format(username,job_id),\
+                                            "actions": [{"name": "option","text": "Send it in!",\
+                                                         "type": "button","value": "Yes" },{
+                                                             "name": "no",
+                                                             "text": "Not now, may be later!",
+                                                             "type": "button",
+                                                             "value": "bad"
+                                                         }]}])
 
 def parse_slack_output(slack_rtm_output):
     """
@@ -110,11 +114,7 @@ def process_slack_output(cmd,chn,msg,usr):
     threads.append(t)
     t.start()
 
-
-
 if __name__ == "__main__":
-
-
       slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
       BOT_NAME= os.environ.get('CHATBOT_NAME')
       BOT_ID = get_bot_id(BOT_NAME,slack_client)
