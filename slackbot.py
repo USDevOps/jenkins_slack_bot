@@ -2,14 +2,14 @@
 ##-------------------------------------------------------------------
 ## @copyright 2017 DennyZhang.com
 ## Licensed under MIT
-##   https://raw.githubusercontent.com/DennyZhang/devops_public/master/LICENSE
+##   https://www.dennyzhang.com/wp-content/mit_license.txt
 ##
 ## File : slackbot.py
 ## Author : Vivek Grover <vivek271091@gmail.com>, Denny Zhang <contact@dennyzhang.com>
 ## Description :
 ## --
 ## Created : <2017-08-27>
-## Updated: Time-stamp: <2017-09-25 09:18:28>
+## Updated: Time-stamp: <2017-09-25 17:14:34>
 ##-------------------------------------------------------------------
 import os
 import time
