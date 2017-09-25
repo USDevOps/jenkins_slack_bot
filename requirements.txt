@@ -1,0 +1,4 @@
+pymysql
+jenkins
+slackbot
+slackclient
