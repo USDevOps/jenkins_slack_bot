@@ -1,3 +1,16 @@
+#!/usr/bin/python
+##-------------------------------------------------------------------
+## @copyright 2017 DennyZhang.com
+## Licensed under MIT
+##   https://raw.githubusercontent.com/DennyZhang/devops_public/master/LICENSE
+##
+## File : slackbot.py
+## Author : Vivek Grover <vivek271091@gmail.com>, Denny Zhang <contact@dennyzhang.com>
+## Description :
+## --
+## Created : <2017-08-27>
+## Updated: Time-stamp: <2017-09-25 09:13:41>
+##-------------------------------------------------------------------
 import os
 import time
 import subprocess
@@ -10,7 +23,6 @@ import slack_message
 
 # retrun username of the user
 def get_user_name(username,slack_client):
-
     api_call = slack_client.api_call("users.list")
     if api_call.get('ok'):
        users = api_call.get('members')
@@ -120,3 +132,4 @@ if __name__ == "__main__":
            time.sleep(WEBSOCKET_DELAY)
       else:
          print("Connection failed. Invalid Slack token or bot ID?")
+## File : slackbot.py ends

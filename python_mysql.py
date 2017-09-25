@@ -1,4 +1,17 @@
-#!/usr/bin/python3
+#!/usr/bin/python
+##-------------------------------------------------------------------
+## @copyright 2017 DennyZhang.com
+## Licensed under MIT
+##   https://raw.githubusercontent.com/DennyZhang/devops_public/master/LICENSE
+##
+## File : python_mysql.py
+## Author : Vivek Grover <vivek271091@gmail.com>, Denny Zhang <contact@dennyzhang.com>
+## Description :
+## --
+## Created : <2017-08-27>
+## Updated: Time-stamp: <2017-09-25 09:13:47>
+##-------------------------------------------------------------------
+
 
 import pymysql
 
@@ -63,3 +76,4 @@ def add_user(user):
       db.rollback()
 
    db.close()
+## File : python_mysql.py ends

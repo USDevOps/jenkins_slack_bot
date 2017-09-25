@@ -1,3 +1,16 @@
+#!/usr/bin/python
+##-------------------------------------------------------------------
+## @copyright 2017 DennyZhang.com
+## Licensed under MIT
+##   https://raw.githubusercontent.com/DennyZhang/devops_public/master/LICENSE
+##
+## File : slack_message.py
+## Author : Vivek Grover <vivek271091@gmail.com>, Denny Zhang <contact@dennyzhang.com>
+## Description :
+## --
+## Created : <2017-08-27>
+## Updated: Time-stamp: <2017-09-25 09:14:06>
+##-------------------------------------------------------------------
 from slackclient import SlackClient
 import os
 import slackbot
@@ -49,5 +62,6 @@ def send_message_without_button(username,msg):
         text='<@{0}>'.format(user_id),
         username='chatbot2',
         as_user=True,
-        attachments=[{"text": "{1}".format(user_id,msg),"color":"green","attachment_type": "default"}]
+        attachments=[{"text": "{1} {2}".format(user_id,msg),"color":"green","attachment_type": "default"}]
 )
+## File : slack_message.py ends

@@ -1,3 +1,16 @@
+#!/usr/bin/python
+##-------------------------------------------------------------------
+## @copyright 2017 DennyZhang.com
+## Licensed under MIT
+##   https://raw.githubusercontent.com/DennyZhang/devops_public/master/LICENSE
+##
+## File : slack_cmd_process.py
+## Author : Vivek Grover <vivek271091@gmail.com>, Denny Zhang <contact@dennyzhang.com>
+## Description :
+## --
+## Created : <2017-08-27>
+## Updated: Time-stamp: <2017-09-25 09:13:57>
+##-------------------------------------------------------------------
 import os
 import python_mysql
 import re
@@ -83,3 +96,4 @@ def execute_jenkins_job(job_name):
   time.sleep(8)
   last_build_number = server.get_job_info('{0}'.format(job_name))['lastCompletedBuild']['number']
   return server.get_build_console_output('{0}'.format(job_name), last_build_number)
+## File : slack_cmd_process.py ends
