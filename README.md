@@ -42,7 +42,9 @@ docker build -t jenkinsbot .
 ```
 
 # System Design
-- TODO
+### High Level Design Diagram of Jenkins_Slack_Bot.
+
+![High Level Design Diagram](https://s3.ap-south-1.amazonaws.com/jenkinsbot/HLD_jenkinsslackbot.jpg)
 
 # Demo & Screenshot
 ![Jenkins Slackbot demo GIF](https://s3.ap-south-1.amazonaws.com/jenkinsbot/ezgif.com-optimize.gif)
