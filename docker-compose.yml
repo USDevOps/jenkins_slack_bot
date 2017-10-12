@@ -1,0 +1,28 @@
+version: '2'
+services:
+#Please set the environment variables before start running the container with docker compose.
+   db_bot:
+     container_name: db_jenkins_bot
+     build:
+       context: https://github.com/USDevOps/jenkins_slack_bot.git
+       dockerfile: Dockerfile
+     environment:
+       MYSQL_ROOT_PASSWORD : "MYSQL_PASS"
+       SLACK_BOT_TOKEN : "BOT_TOKEN"
+       CHATBOT_NAME : "BOT_NAME"
+       APPROVER_SLACK_NAME : "APPROVER_SLACK_ID"
+     restart: always
+
+   jenkins_bot:
+     container_name: jenkins_slack_bot
+     extends: db_bot
+     entrypoint: python3.4 slackbot.py
+
+#Please set the HOST PORT to receive the events from slack inside the container
+
+   jenkins_bot_2:
+     container_name: jenkins_slack_bot_2
+     extends: jenkins_bot
+     ports:
+      - "HOST_PORT:80"
+     entrypoint: python3.4 start_app.py
