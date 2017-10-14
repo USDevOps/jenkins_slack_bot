@@ -74,7 +74,7 @@ Now under the **Bot User OAuth Access Token** section you'll be able to find the
 
 Please copy the bot token from the page and save it you will need to use it while building the bot.
 
-![Bot User Access token](https://s3.ap-south-1.amazonaws.com/jenkinsbot/token.PNG
+![Bot User Access token](https://s3.ap-south-1.amazonaws.com/jenkinsbot/token.PNG)
 
 ## How To Use
 
