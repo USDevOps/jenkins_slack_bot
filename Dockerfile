@@ -9,14 +9,15 @@ RUN apt-get -yqq update
 
 WORKDIR /root/bot
 
-RUN wget -Nq https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/python_mysql.py && \
- wget -Nq https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slack_cmd_process.py && \
- wget -Nq https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slack_message.py && \
- wget -Nq https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slackbot.py && \
- wget -Nq https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/start_app.py
+ADD https://raw.githubusercontent.com/vivekgrover1/jenkinsbot/master/python_mysql.py \
+ https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slack_cmd_process.py  \
+ https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slack_message.py  \
+ https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slackbot.py  \
+ https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/start_app.py /root/bot/
 
+ADD https://raw.githubusercontent.com/vivekgrover1/jenkinsbot/master/init.sql /docker-entrypoint-initdb.d/
 
-RUN cd /docker-entrypoint-initdb.d;wget -Nq https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/init.sql
+RUN chmod 775 /docker-entrypoint-initdb.d/init.sql && chmod -R 775 /root
 
 RUN rm -rf /var/lib/apt/lists/* && \
 rm -rf /var/cache/apk/*
