@@ -9,13 +9,13 @@ RUN apt-get -yqq update
 
 WORKDIR /root/bot
 
-ADD https://raw.githubusercontent.com/vivekgrover1/jenkinsbot/master/python_mysql.py \
+ADD https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/python_mysql.py \
  https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slack_cmd_process.py  \
  https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slack_message.py  \
  https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slackbot.py  \
  https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/start_app.py /root/bot/
 
-ADD https://raw.githubusercontent.com/vivekgrover1/jenkinsbot/master/init.sql /docker-entrypoint-initdb.d/
+ADD https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/init.sql /docker-entrypoint-initdb.d/
 
 RUN chmod 775 /docker-entrypoint-initdb.d/init.sql && chmod -R 775 /root
 
