@@ -1,28 +1,33 @@
 version: '2'
 services:
-#Please set the environment variables before start running the container with docker compose.
-   db_bot:
+#Please set the environment variables in env file in below mentioned format before start running the container with docker compose.
+#MYSQL_ROOT_PASSWORD=mysql_root_pass
+#SLACK_BOT_TOKEN=bot_token
+#CHATBOT_NAME=bot_name
+#APPROVER_SLACK_NAME=approver_slack_id
+#JENKINS_URL=jenkins_url
+#JENKINS_USER=jenkins_user_name
+#JENKINS_PASS=jenkins_user_pass
+
+   db:
      container_name: db_jenkins_bot
      build:
-       context: https://github.com/USDevOps/jenkins_slack_bot.git
+       context: https://github.com/vivekgrover1/jenkinsbot.git
        dockerfile: Dockerfile
-     environment:
-       MYSQL_ROOT_PASSWORD : "MYSQL_PASS"
-       SLACK_BOT_TOKEN : "BOT_TOKEN"
-       CHATBOT_NAME : "BOT_NAME"
-       APPROVER_SLACK_NAME : "APPROVER_SLACK_ID"
+     env_file:
+        - ./vars.env
      restart: always
 
-   jenkins_bot:
-     container_name: jenkins_slack_bot
-     extends: db_bot
+   jenkins_bot_rtm:
+     container_name: jenkins_slack_bot_rtm
+     extends: db
      entrypoint: python3.4 slackbot.py
 
-#Please set the HOST PORT to receive the events from slack inside the container
+#Please set the PUBLISHED PORT (the publicly exposed port) to receive the events from slack to your HOST MACHINE.
 
-   jenkins_bot_2:
-     container_name: jenkins_slack_bot_2
-     extends: jenkins_bot
+   jenkins_bot_event:
+     container_name: jenkins_slack_bot_event
+     extends: jenkins_bot_rtm
      ports:
-      - "HOST_PORT:80"
+      - "PUBLISHED_PORT:80"
      entrypoint: python3.4 start_app.py
