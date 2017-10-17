@@ -12,7 +12,7 @@ services:
    db:
      container_name: db_jenkins_bot
      build:
-       context: https://github.com/vivekgrover1/jenkinsbot.git
+       context: https://github.com/USDevOps/jenkins_slack_bot.git
        dockerfile: Dockerfile
      env_file:
         - ./vars.env
