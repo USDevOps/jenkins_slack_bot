@@ -1,7 +1,7 @@
 # jenkins_slack_bot
 Invoke Jenkins jobs from slack
 
-[![Build Status](https://travis-ci.org/DennyZhang/jenkins_slack_bot.svg?branch=master)](https://travis-ci.org/DennyZhang/jenkins_slack_bot) [![Docker](https://www.dennyzhang.com/wp-content/uploads/sns/docker.png)](https://hub.docker.com/r/denny/jenkins_slack_bot/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![Build Status](https://travis-ci.org/DennyZhang/jenkins_slack_bot.svg?branch=master)](https://travis-ci.org/DennyZhang/jenkins_slack_bot) [![Docker](https://raw.githubusercontent.com/USDevOps/mywechat-slack-group/master/images/docker.png)](https://hub.docker.com/r/denny/jenkins_slack_bot/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 ## Deploying a JenkinsSlack bot using [Docker Container](https://github.com/vivekgrover1/jenkinsbot/blob/master/Dockerfile) 
 This bot is an implementation of CI/CD Process Integration with ChatOps and building a Slack App with Slack's Python SDK, [python-slackclient](http://python-slackclient.readthedocs.io/en/latest/).
