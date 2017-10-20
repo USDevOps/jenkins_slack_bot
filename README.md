@@ -1,7 +1,7 @@
 # jenkins_slack_bot
 Invoke Jenkins jobs from slack
 
-[![Build Status](https://travis-ci.org/DennyZhang/jenkins_slack_bot.svg?branch=master)](https://travis-ci.org/DennyZhang/jenkins_slack_bot) [![Docker](https://www.dennyzhang.com/wp-content/uploads/sns/docker.png)](https://hub.docker.com/r/denny/jenkins_slack_bot/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![Build Status](https://travis-ci.org/DennyZhang/jenkins_slack_bot.svg?branch=master)](https://travis-ci.org/DennyZhang/jenkins_slack_bot) [![Docker](https://raw.githubusercontent.com/USDevOps/mywechat-slack-group/master/images/docker.png)](https://hub.docker.com/r/denny/jenkins_slack_bot/) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 ## Deploying a JenkinsSlack bot using [Docker Container](https://github.com/USDevOps/jenkins_slack_bot/blob/master/docker-compose.yml) 
 This bot is an implementation of CI/CD Process Integration with ChatOps and building a Slack App with Slack's Python SDK, [python-slackclient](http://python-slackclient.readthedocs.io/en/latest/).
@@ -107,5 +107,5 @@ docker-compose.yml up
 ![Jenkins Slackbot demo GIF](https://s3.ap-south-1.amazonaws.com/jenkinsbot/ezgif.com-optimize.gif)
 
 # Maintainers
-- Vivek Grover:[![LinkedIn](https://www.dennyzhang.com/wp-content/uploads/sns/linkedin.png)](https://www.linkedin.com/in/vivek-grover-69420743/) [![Github](https://www.dennyzhang.com/wp-content/uploads/sns/github.png)](https://github.com/vivekgrover1/)
-- [Denny Zhang](https://www.dennyzhang.com): [![LinkedIn](https://www.dennyzhang.com/wp-content/uploads/sns/linkedin.png)](https://www.linkedin.com/in/dennyzhang001) [![Github](https://www.dennyzhang.com/wp-content/uploads/sns/github.png)](https://github.com/DennyZhang) [![Twitter](https://www.dennyzhang.com/wp-content/uploads/sns/twitter.png)](https://twitter.com/dennyzhang001) [![Slack](https://www.dennyzhang.com/wp-content/uploads/sns/slack.png)](https://goo.gl/ozDDyL)
+- Vivek Grover:[![LinkedIn](https://www.dennyzhang.com/wp-content/uploads/sns/linkedin.png)](https://www.linkedin.com/in/vivek-grover-69420743/) [![Github](https://raw.githubusercontent.com/USDevOps/mywechat-slack-group/master/images/github.png)](https://github.com/vivekgrover1/)
+- [Denny Zhang](https://www.dennyzhang.com): [![LinkedIn](https://www.dennyzhang.com/wp-content/uploads/sns/linkedin.png)](https://www.linkedin.com/in/dennyzhang001) [![Github](https://raw.githubusercontent.com/USDevOps/mywechat-slack-group/master/images/github.png)](https://github.com/DennyZhang) [![Twitter](https://raw.githubusercontent.com/USDevOps/mywechat-slack-group/master/images/twitter.png)](https://twitter.com/dennyzhang001) [![Slack](https://raw.githubusercontent.com/USDevOps/mywechat-slack-group/master/images/slack.png)](https://goo.gl/ozDDyL)
