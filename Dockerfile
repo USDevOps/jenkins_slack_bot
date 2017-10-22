@@ -13,7 +13,7 @@ COPY python_mysql.py slack_cmd_process.py slack_message.py slackbot.py start_app
 
 COPY init.sql /docker-entrypoint-initdb.d/
 
-RUN chmod 775 /docker-entrypoint-initdb.d/init.sql && chmod -R 775 /root/bot
+RUN chmod 755 /docker-entrypoint-initdb.d/init.sql && chmod -R 755 /root/bot
 
 RUN rm -rf /var/lib/apt/lists/* && \
 rm -rf /var/cache/apk/*
