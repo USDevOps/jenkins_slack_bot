@@ -20,7 +20,6 @@ import threading
 import python_mysql
 import slack_message
 
-
 # return username of the user
 def get_user_name(username, slack_client):
     api_call = slack_client.api_call("users.list")
@@ -67,17 +66,19 @@ def handle_command(command, channel, msg_id, user_id):
         message to slack thread or message.
     """
     username = get_user_name(user_id, slack_client)
-    python_mysql.add_user(username)
+    value = python_mysql.get_status(username)
+    if value == None:
+      python_mysql.add_user(username)
 
     if command == "member joined":
         msg = ":slack: Welcome to the channel, Here you can instruct the jenkinsbot to execute the job based on the " \
               "id.\n\nYou can use @jenkinsbot help message to get the usage details.\n\nPlease note you need to get " \
-              "the Approval from Admin for every job that you will execute. "
+              "the Approval from Admin to build the job in jenkins. "
         python_mysql.add_user(username)
-        slack_message.send_message_without_button(username, msg, channel)
+        #slack_message.send_message_without_button(username, msg, channel)
     else:
 
-        response, status, color, job_id = slack_cmd_process.cmd_process(command, username)
+        response, status, color= slack_cmd_process.cmd_process(command, username,channel)
         if status != "notapproved":
             if msg_id == "Thread_False":
                 slack_client.api_call("chat.postMessage", channel=channel,
@@ -92,7 +93,7 @@ def handle_command(command, channel, msg_id, user_id):
             slack_client.api_call("chat.postMessage", channel=channel,
                                   text="<@%s> " % user_id, as_user=True, attachments=[
                     {"text": "%s" % response, "color": "%s" % color, "attachment_type": "default",
-                     "callback_id": "{0}_{1}_{2}".format(username, job_id, channel),
+                     "callback_id": "{0}_{1}".format(username, channel),
                      "actions": [{"name": "option", "text": "Send it in!", "type": "button", "value": "Yes"}, {
                          "name": "no",
                          "text": "Not now, may be later!",
@@ -137,6 +138,19 @@ def process_slack_output(cmd, chn, msg, usr):
 
 if __name__ == "__main__":
 
+    if os.environ.get('SLACK_BOT_TOKEN') is None:
+        print ("SLACK_BOT_TOKEN env variable is not defined")
+    elif os.environ.get('CHATBOT_NAME') is None:
+        print ("CHATBOT_NAME env variable is not defined")
+    elif os.environ.get('APPROVER_SLACK_NAME') is None:
+        print ("APPROVER_SLACK_NAME env variable is not defined")
+    elif os.environ.get('JENKINS_URL') is None:
+        print ("JENKINS_URL env variable is not defined")
+    elif os.environ.get('JENKINS_USER') is None:
+        print ("JENKINS_USER env variable is not defined")
+    elif os.environ.get('JENKINS_PASS') is None:
+        print ("JENKINS_PASS env variable is not defined")
+        
     slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
     BOT_NAME = os.environ.get('CHATBOT_NAME')
     BOT_ID = get_bot_id(BOT_NAME, slack_client)
@@ -145,7 +159,7 @@ if __name__ == "__main__":
 
     WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
     if slack_client.rtm_connect():
-        print("StarterBot connected and running!")
+        print("JenkinsBot_RTM connected and running!")
         while True:
             sc = slack_client.rtm_read()
             command, channel, msg_id, user_id = parse_slack_output(sc)
