@@ -12,164 +12,191 @@
 ## Updated: Time-stamp: <2017-09-25 17:14:34>
 ##-------------------------------------------------------------------
 import os
-import time
-import subprocess
-from slackclient import SlackClient
-import slack_cmd_process
-import threading
 import python_mysql
+import re
+import subprocess
+import jenkins
+import time
+import slackbot
 import slack_message
 
-
-# return username of the user
-def get_user_name(username, slack_client):
-    api_call = slack_client.api_call("users.list")
-    if api_call.get('ok'):
-        users = api_call.get('members')
-        for user in users:
-            if 'name' in user and user.get('id') == username:
-                return user.get('name')
+help = """Use below commands to use the bot.\n\n!jenkinsbot list jobs\n
+!jenkinsbot list running jobs\n
+!jenkinsbot list failed jobs\n
+!jenkinsbot describe job <job_name>\n
+!jenkinsbot execute job <job name> \n
+"""
 
 
-# return bot_id of the user
-def get_bot_id(bot_name, slack_client):
+def cmd_process(command, username, chann_id):
     """
-        This function gets the id of bot based on its name in slack team.
-        We need the id because it allows us to parse the message directed at bot.
-
+      Decide the command which is to be run based on user message directed
+      at bot.
     """
-    api_call = slack_client.api_call("users.list")
-    if api_call.get('ok'):
-        users = api_call.get('members')
-        for user in users:
-            if 'name' in user and user.get('name') == bot_name:
-                return user.get('id')
+    lis = command.split()
+
+    if command.strip() == "None":
+        return help, "approved", "good"
+    if command.strip().startswith("hi"):
+        return "I am doing good, How about you?", "approved", "good"
+    if re.search(r'help|--help|-- help|--\s.*help', command):
+        return help, "approved", "good"
+    if re.search(r'list jobs|jobslist|listjobs|jobs list|list job|job list', command):
+        return list_jobs_jenkins(username, chann_id), "approved", "good"
+    if re.search(
+            r'list running jobs|jobsrunninglist|listrunningjobs|jobs running list|running job|job running list|running',
+            command):
+        return list_running_jenkins_job(username, chann_id), "approved", "good"
+    if re.search(r'list failed jobs|jobsfailedlist|listfailedjobs|jobs failed list|failed job|job failed list|failed',
+                 command):
+        return list_failed_jenkins_job(username, chann_id), "approved", "good"
+    if len(lis) == 3 and lis[0] == "describe" and lis[1] == "job" and len(lis[2]) > 0:
+        output = jenkins_describe(lis[2].strip())
+        if output == "Sorry, I can't find the job. Typo maybe?":
+            return output, "approved", "danger"
+        return output, "approved", "good"
+    if len(lis) == 3 and lis[0] == "execute" and lis[1] == "job" and len(lis[2]) > 0:
+        response, status, color = cmd_execute(username, lis[2], chann_id)
+        return response, status, color
+
+    return "Not sure what you mean, please use help.\n\n{0}".format(help), "approved", "danger"
 
 
-def get_im_id(user_id, slack_client):
-    """
-        This function gets the id of bot based on its name in slack team.
-        We need the id because it allows us to parse the message directed at bot.
-
-    """
-    api_call = slack_client.api_call("im.list")
-    if api_call.get('ok'):
-        ims = api_call.get('ims')
-        for user in ims:
-            if 'user' in user and user.get('user') == user_id:
-                return user.get('id')
-
-
-def handle_command(command, channel, msg_id, user_id):
-    """
-        Receives commands directed at the bot and sends to function cmd_process
-        to process the command , which returns the response. Based on response it post the
-        message to slack thread or message.
-    """
-    username = get_user_name(user_id, slack_client)
+def cmd_execute(username, job_name, chann_id):
     value = python_mysql.get_status(username)
-    if value == None:
-      python_mysql.add_user(username)
+    if value != "Approved":
+        return ":slightly_frowning_face: You don't have Approval to execute the job.\nWould you like to get the " \
+               "approval from Admin to execute this command?", "notapproved", "danger"
+    elif value == "Approved":
+        output = cmd_exec(username, job_name, chann_id)
+        if output == "Sorry, I can't find the job. Typo maybe?":
+            return output, "approved", "danger"
+        return output, "approved", "good"
 
-    if command == "member joined":
-        msg = ":slack: Welcome to the channel, Here you can instruct the jenkinsbot to execute the job based on the " \
-              "id.\n\nYou can use @jenkinsbot help message to get the usage details.\n\nPlease note you need to get " \
-              "the Approval from Admin to build the job in jenkins. "
-        python_mysql.add_user(username)
-        #slack_message.send_message_without_button(username, msg, channel)
+
+def cmd_exec(username, job_name, chann_id):
+    """
+      execute the jenkins job based on provided job id and return the console output
+
+    """
+    try:
+        url = get_job_url(job_name)
+        if url != "not found":
+            slack_message.send_message_without_button(username,
+                                                      'Please wait job is being executed, use below url to check the '
+                                                      'progress.\n{0}'.format(
+                                                          url), chann_id)
+        output = execute_jenkins_job(job_name)
+        return output
+    except:
+        return "Exception"
+
+
+def execute_jenkins_job(job_name):
+    try:
+        jenkins_url = os.environ.get('JENKINS_URL')
+        user_name = os.environ.get('JENKINS_USER')
+        user_pass = os.environ.get('JENKINS_PASS')
+        server = jenkins.Jenkins('{0}'.format(jenkins_url), username='{0}'.format(user_name),
+                                 password='{0}'.format(user_pass))
+        last_build_number = server.get_job_info('{0}'.format(job_name))['lastCompletedBuild']['number']
+        new_build_number = server.get_job_info('{0}'.format(job_name))['lastCompletedBuild']['number']
+        server.build_job('{0}'.format(job_name))
+        while new_build_number == last_build_number:
+            time.sleep(2)
+            new_build_number = server.get_job_info('{0}'.format(job_name))['lastCompletedBuild']['number']
+        return server.get_build_console_output('{0}'.format(job_name), new_build_number)
+    except jenkins.NotFoundException:
+        return "Sorry, I can't find the job. Typo maybe?"
+
+
+def list_jobs_jenkins(username, chann_id):
+    jenkins_url = os.environ.get('JENKINS_URL')
+    user_name = os.environ.get('JENKINS_USER')
+    user_pass = os.environ.get('JENKINS_PASS')
+    server = jenkins.Jenkins('{0}'.format(jenkins_url), username='{0}'.format(user_name),
+                             password='{0}'.format(user_pass))
+    jobs = server.get_jobs()
+    slack_message.send_message_without_button(username, "I'm getting the jobs list from Jenkins...", chann_id)
+    time.sleep(2)
+    max_length = max([len(job['name']) for job in jobs])
+    return ('\n'.join(
+        ['{2})  <{1}|{0}> '.format(job['name'].ljust(max_length), job['url'], (counter + 1)) for counter, job in
+         enumerate(jobs)]).strip())
+
+
+def get_job_url(job_name):
+    jenkins_url = os.environ.get('JENKINS_URL')
+    user_name = os.environ.get('JENKINS_USER')
+    user_pass = os.environ.get('JENKINS_PASS')
+    server = jenkins.Jenkins('{0}'.format(jenkins_url), username='{0}'.format(user_name),
+                             password='{0}'.format(user_pass))
+    jobs = server.get_jobs()
+    for job in jobs:
+        if job['name'] == job_name:
+            return job['url']
+    return "not found"
+
+
+def list_running_jenkins_job(username, chann_id):
+    jenkins_url = os.environ.get('JENKINS_URL')
+    user_name = os.environ.get('JENKINS_USER')
+    user_pass = os.environ.get('JENKINS_PASS')
+    server = jenkins.Jenkins('{0}'.format(jenkins_url), username='{0}'.format(user_name),
+                             password='{0}'.format(user_pass))
+    jobs = [job for job in server.get_jobs() if 'anime' in job['color']]
+    jobs_info = [server.get_job_info(job['name']) for job in jobs]
+    slack_message.send_message_without_button(username, "I will ask for the current running builds list!", chann_id)
+    time.sleep(2)
+    if not jobs_info:
+        return "There is no running jobs!"
     else:
-
-        response, status, color= slack_cmd_process.cmd_process(command, username,channel)
-        if status != "notapproved":
-            if msg_id == "Thread_False":
-                slack_client.api_call("chat.postMessage", channel=channel,
-                                      text="<@%s> " % user_id, as_user=True,
-                                      attachments=[{"text": "%s" % response, "color": "%s" % color}])
-            else:
-                slack_client.api_call("chat.postMessage", channel=channel,
-                                      text="<@%s> " % user_id, as_user=True, thread_ts=msg_id,
-                                      attachments=[{"text": "%s" % response, "color": "%s" % color}])
-
-        else:
-            slack_client.api_call("chat.postMessage", channel=channel,
-                                  text="<@%s> " % user_id, as_user=True, attachments=[
-                    {"text": "%s" % response, "color": "%s" % color, "attachment_type": "default",
-                     "callback_id": "{0}_{1}".format(username, channel),
-                     "actions": [{"name": "option", "text": "Send it in!", "type": "button", "value": "Yes"}, {
-                         "name": "no",
-                         "text": "Not now, may be later!",
-                         "type": "button",
-                         "value": "bad"
-                     }]}])
+        return '\n\n'.join(
+            ['<{1}|{0}>\n{2}'.format(job['name'], job['lastBuild']['url'], job['healthReport'][0]['description']) for
+             job in jobs_info]).strip()
 
 
-def parse_slack_output(slack_rtm_output):
-    """
-        The Slack Real Time Messaging API is an events firehose.
-        this parsing function parse the message directed at bot based on its id
-        and return None otherwise.
-    """
-    output_list = slack_rtm_output
-
-    if output_list and len(output_list) > 0:
-        for output in output_list:
-            if output and 'text' in output and AT_BOT in output['text'].lower() and 'thread_ts' in output:
-                # return text after the @ mention, whitespace removed
-                return output['text'].lower().split(AT_BOT)[1].strip().lower(), \
-                       output['channel'], output['thread_ts'], output['user']
-            elif output and 'text' in output and AT_BOT in output['text'].lower():
-                return output['text'].lower().split(AT_BOT)[1].strip().lower(), \
-                       output['channel'], "Thread_False", output['user']
-            elif output and 'type' in output and 'member_joined_channel' in output['type']:
-                return "member joined", output['channel'], "Thread_False", output['user']
-
-    return None, None, None, None
-
-
-def process_slack_output(cmd, chn, msg, usr):
-    """
-        Message directed at bot is created into thread , to speed up the
-        processing of the message.
-    """
-
-    t = threading.Thread(target=handle_command, args=(cmd, chn, msg, usr,))
-    threads.append(t)
-    t.start()
-
-
-if __name__ == "__main__":
-
-    if os.environ.get('SLACK_BOT_TOKEN') is None:
-        print ("SLACK_BOT_TOKEN env variable is not defined")
-    elif os.environ.get('CHATBOT_NAME') is None:
-        print ("CHATBOT_NAME env variable is not defined")
-    elif os.environ.get('APPROVER_SLACK_NAME') is None:
-        print ("APPROVER_SLACK_NAME env variable is not defined")
-    elif os.environ.get('JENKINS_URL') is None:
-        print ("JENKINS_URL env variable is not defined")
-    elif os.environ.get('JENKINS_USER') is None:
-        print ("JENKINS_USER env variable is not defined")
-    elif os.environ.get('JENKINS_PASS') is None:
-        print ("JENKINS_PASS env variable is not defined")
-
-    slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
-    BOT_NAME = os.environ.get('CHATBOT_NAME')
-    BOT_ID = get_bot_id(BOT_NAME, slack_client)
-    AT_BOT= "!jenkinsbot"
-    threads = []
-
-    WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
-    if slack_client.rtm_connect():
-        print("JenkinsBot_RTM connected and running!")
-        while True:
-            sc = slack_client.rtm_read()
-            command, channel, msg_id, user_id = parse_slack_output(sc)
-            if command == "":
-               command = "None"
-            if command and channel and msg_id and user_id:
-                process_slack_output(command, channel, msg_id, user_id)
-            time.sleep(WEBSOCKET_DELAY)
+def list_failed_jenkins_job(username, chann_id):
+    jenkins_url = os.environ.get('JENKINS_URL')
+    user_name = os.environ.get('JENKINS_USER')
+    user_pass = os.environ.get('JENKINS_PASS')
+    server = jenkins.Jenkins('{0}'.format(jenkins_url), username='{0}'.format(user_name),
+                             password='{0}'.format(user_pass))
+    jobs = [job for job in server.get_jobs() if 'red' in job['color']]
+    jobs_info = [server.get_job_info(job['name']) for job in jobs]
+    slack_message.send_message_without_button(username, "I will get the failed jenkins job!", chann_id)
+    time.sleep(2)
+    if not jobs_info:
+        return "There is no failed jobs!"
     else:
-        print("Connection failed. Invalid Slack token or bot ID?")
+        return '\n\n'.join(
+            ['<{1}|{0}>\n{2}'.format(job['name'], job['lastBuild']['url'], job['healthReport'][0]['description']) for
+             job in jobs_info]).strip()
+
+
+def jenkins_describe(job_name):
+    """Describe the job specified by jobName."""
+    jenkins_url = os.environ.get('JENKINS_URL')
+    user_name = os.environ.get('JENKINS_USER')
+    user_pass = os.environ.get('JENKINS_PASS')
+    server = jenkins.Jenkins('{0}'.format(jenkins_url), username='{0}'.format(user_name),
+                             password='{0}'.format(user_pass))
+
+    try:
+        job = server.get_job_info(job_name.strip())
+    except jenkins.NotFoundException:
+        return "Sorry, I can't find the job. Typo maybe?"
+
+    return ''.join([
+        'Name: ', job['name'], '\n',
+        'URL: ', job['url'], '\n',
+        'Description: ', 'None' if job['description'] is None else job['description'], '\n',
+        'Next Build Number: ',
+        str('None' if job['nextBuildNumber'] is None else job['nextBuildNumber']), '\n',
+        'Last Successful Build Number: ',
+        str('None' if job['lastBuild'] is None else job['lastBuild']['number']), '\n',
+        'Last Successful Build URL: ',
+        'None' if job['lastBuild'] is None else job['lastBuild']['url'], '\n'
+    ])
 
 ## File : slack_cmd_process.py ends
