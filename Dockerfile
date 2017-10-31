@@ -9,18 +9,13 @@ RUN apt-get -yqq update
 
 WORKDIR /root/bot
 
-ADD https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/python_mysql.py \
- https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slack_cmd_process.py  \
- https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slack_message.py  \
- https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/slackbot.py  \
- https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/start_app.py /root/bot/
+COPY python_mysql.py slack_cmd_process.py slack_message.py slackbot.py start_app.py /root/bot/
 
-ADD https://raw.githubusercontent.com/USDevOps/jenkins_slack_bot/tag_v1/init.sql /docker-entrypoint-initdb.d/
+COPY init.sql /docker-entrypoint-initdb.d/
 
-RUN chmod 775 /docker-entrypoint-initdb.d/init.sql && chmod -R 775 /root
+RUN chmod 755 /docker-entrypoint-initdb.d/init.sql && chmod -R 755 /root/bot
 
 RUN rm -rf /var/lib/apt/lists/* && \
 rm -rf /var/cache/apk/*
 
-ENV SLACK_BOT_TOKEN="BOT_TOKEN" CHATBOT_NAME="BOT_NAME" \
-APPROVER_SLACK_NAME="APPROVER_SLACK_ID"
+ENV PYTHONUNBUFFERED=0
