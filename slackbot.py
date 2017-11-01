@@ -19,6 +19,7 @@ import slack_cmd_process
 import threading
 import python_mysql
 import slack_message
+import re
 
 
 # return username of the user
@@ -68,18 +69,18 @@ def handle_command(command, channel, msg_id, user_id):
     """
     username = get_user_name(user_id, slack_client)
     value = python_mysql.get_status(username)
-    if value == None:
-      python_mysql.add_user(username)
+    if value is None:
+        python_mysql.add_user(username)
 
     if command == "member joined":
         msg = ":slack: Welcome to the channel, Here you can instruct the jenkinsbot to execute the job based on the " \
               "id.\n\nYou can use @jenkinsbot help message to get the usage details.\n\nPlease note you need to get " \
               "the Approval from Admin to build the job in jenkins. "
         python_mysql.add_user(username)
-        #slack_message.send_message_without_button(username, msg, channel)
+        # slack_message.send_message_without_button(username, msg, channel)
     else:
 
-        response, status, color= slack_cmd_process.cmd_process(command, username,channel)
+        response, status, color = slack_cmd_process.cmd_process(command, username, channel)
         if status != "notapproved":
             if msg_id == "Thread_False":
                 slack_client.api_call("chat.postMessage", channel=channel,
@@ -113,11 +114,20 @@ def parse_slack_output(slack_rtm_output):
 
     if output_list and len(output_list) > 0:
         for output in output_list:
-            if output and 'text' in output and AT_BOT in output['text'].lower() and 'thread_ts' in output:
-                # return text after the @ mention, whitespace removed
-                return output['text'].lower().split(AT_BOT)[1].strip().lower(), \
-                       output['channel'], output['thread_ts'], output['user']
-            elif output and 'text' in output and AT_BOT in output['text'].lower():
+            if output and 'text' in output and AT_BOT in output['text'].lower() and re.match(r'!',
+                                                                                             output['text'].lower()):
+                if 'thread_ts' in output:
+                    # return text after the @ mention, whitespace removed
+                    return output['text'].lower().split(AT_BOT)[1].strip().lower(), \
+                           output['channel'], output['thread_ts'], output['user']
+                elif output and 'text' in output and AT_BOT in output['text'].lower() and re.match(r'!', output[
+                    'text'].lower()):
+                    return output['text'].lower().split(AT_BOT)[1].strip().lower(), \
+                           output['channel'], "Thread_False", output['user']
+                elif output and 'type' in output and 'member_joined_channel' in output['type']:
+                    return "member joined", output['channel'], "Thread_False", output['user']
+            elif output and 'text' in output and AT_BOT in output['text'].lower() and re.match(r'!',
+                                                                                               output['text'].lower()):
                 return output['text'].lower().split(AT_BOT)[1].strip().lower(), \
                        output['channel'], "Thread_False", output['user']
             elif output and 'type' in output and 'member_joined_channel' in output['type']:
@@ -140,22 +150,22 @@ def process_slack_output(cmd, chn, msg, usr):
 if __name__ == "__main__":
 
     if os.environ.get('SLACK_BOT_TOKEN') is None:
-        print ("SLACK_BOT_TOKEN env variable is not defined")
+        print("SLACK_BOT_TOKEN env variable is not defined")
     elif os.environ.get('CHATBOT_NAME') is None:
-        print ("CHATBOT_NAME env variable is not defined")
+        print("CHATBOT_NAME env variable is not defined")
     elif os.environ.get('APPROVER_SLACK_NAME') is None:
-        print ("APPROVER_SLACK_NAME env variable is not defined")
+        print("APPROVER_SLACK_NAME env variable is not defined")
     elif os.environ.get('JENKINS_URL') is None:
-        print ("JENKINS_URL env variable is not defined")
+        print("JENKINS_URL env variable is not defined")
     elif os.environ.get('JENKINS_USER') is None:
-        print ("JENKINS_USER env variable is not defined")
+        print("JENKINS_USER env variable is not defined")
     elif os.environ.get('JENKINS_PASS') is None:
-        print ("JENKINS_PASS env variable is not defined")
+        print("JENKINS_PASS env variable is not defined")
 
     slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
     BOT_NAME = os.environ.get('CHATBOT_NAME')
     BOT_ID = get_bot_id(BOT_NAME, slack_client)
-    AT_BOT= "!jenkinsbot"
+    AT_BOT = "!"
     threads = []
 
     WEBSOCKET_DELAY = 1  # 1 second delay between reading from firehose
@@ -164,12 +174,9 @@ if __name__ == "__main__":
         while True:
             sc = slack_client.rtm_read()
             command, channel, msg_id, user_id = parse_slack_output(sc)
-            if command == "":
-               command = "None"
             if command and channel and msg_id and user_id:
                 process_slack_output(command, channel, msg_id, user_id)
             time.sleep(WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
-
 ## File : slackbot.py ends
