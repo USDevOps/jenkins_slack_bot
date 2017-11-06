@@ -39,15 +39,15 @@ def cmd_process(command, username, chann_id):
         return help, "approved", "good"
     if command.strip().startswith("hi"):
         return "I am doing good, How about you?", "approved", "good"
-    if re.search(r'help|--help|-- help|--\s.*help', command):
+    if re.match(r'help|--help|-- help|--\s.*help', command):
         return help, "approved", "good"
-    if re.search(r'list jobs|jobslist|listjobs|jobs list|list job|job list', command):
+    if re.match(r'list jobs|jobslist|listjobs|jobs list|list job|job list', command):
         return list_jobs_jenkins(username, chann_id), "approved", "good"
-    if re.search(
+    if re.match(
             r'list running jobs|jobsrunninglist|listrunningjobs|jobs running list|running job|job running list|running',
             command):
         return list_running_jenkins_job(username, chann_id), "approved", "good"
-    if re.search(r'list failed jobs|jobsfailedlist|listfailedjobs|jobs failed list|failed job|job failed list|failed',
+    if re.match(r'list failed jobs|jobsfailedlist|listfailedjobs|jobs failed list|failed job|job failed list|failed',
                  command):
         return list_failed_jenkins_job(username, chann_id), "approved", "good"
     if len(lis) == 3 and lis[0] == "describe" and lis[1] == "job" and len(lis[2]) > 0:
